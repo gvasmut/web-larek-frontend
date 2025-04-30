@@ -12,8 +12,8 @@ export class ProductItemModal extends Product {
 	constructor(protected container: HTMLTemplateElement, events: IEvents) {
 		super(container, events);
 
-  this.productImage = this.container.querySelector('.card__image');
-  this.productCategory = this.container.querySelector('.card__category');
+    this.productImage = this.container.querySelector('.card__image');
+    this.productCategory = this.container.querySelector('.card__category');
 		this.productDescription = this.container.querySelector('.card__text');
 		this.button = this.container.querySelector('.button');
 
@@ -43,5 +43,5 @@ export class ProductItemModal extends Product {
     this.setText(this.productCategory, value)
     const className = CategoryClassMap[value] || 'card__category_other';
     this.productCategory.className = `card__category ${className}`;
-  }
+}
 }

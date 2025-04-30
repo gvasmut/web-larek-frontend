@@ -41,10 +41,10 @@ npm run build
 yarn build
 ```
 
-## Данные и типы данных используемые в модели 
+## Данные и типы данных используемые в модели (описание интерфейсов)
 
 #### IProductItem
-Карточка товара - определяет данные для описания товара (информация о товаре):
+Продукт - определяет данные для описания товара (информация о продукте):
 ```
 interface IProductItem {
   id: string,
@@ -55,55 +55,49 @@ interface IProductItem {
   price: number|null;
 }
 ```
-#### IUserForm
-Форма покупатель - информация, передаваемая пользователем для формирования заказа
+#### IOrderData
+Заказ - информация для формирования заказа
 
 ```
-interface IUserForm {
+interface IOrderData {
   address: string,
   email: string,
   phone: string,
-  payment: string
+  payment: string,
+  total:number,
+  items:string[]
 }
 ```
 #### IProductList
-Список товаров - информация для вывода существующих товаров на страницу
+Список товаров - информация для вывода товаров на страницу
 
 ```
 interface IProductList {
   total: number,
-  items: IProductItem[],
-  preview: string|null;
-  getProduct(id: string): IProductItem;
+  items: IProductItem[]
 }
 ```
-#### IBucket
-Корзина - информация о товарах, которые были добавлены в корзину
+#### IBasket
+Корзина - информация о товарах в корзине
 ```
-interface IBucket {
+interface IBasket {
   items: IProductItem[],
   totalprice: number
-  addProduct(product:IProductItem):void;
-  deleteProduct(productId: string): void;
-  cleanBucket():void;
 }
 ```
-#### TProductInfo
-Информация о товаре - данные для просмотра товара 
+
+#### TOrderDeliveryData
+Данные для формы доставки заказа - информация для формы с выбором способа оплаты и адреса доставки 
 ```
-type TProductInfo = Pick<IProductItem, 'image'| 'title'| 'category'|'price'| 'description'>
-```
-#### TOrderAddress
-Адрес заказа - информаця для формы с выбором способа оплаты и адреса доставки 
-```
-type TOrderAddress = Pick<IUserForm, 'payment'|'address'>
+type TOrderDeliveryData = Pick<IUserForm, 'payment'|'address'>
 ```
 
-#### TOrderUserInfo
-Инфрмацмя пользователья для формирования заказа - данные пользователя для заказа: телефон и почта 
+#### TOrderUserData
+Информация пользователя для формы с данными пользователя - данные пользователя для заказа: телефон и почта 
 ```
-type TOrderUserInfo = Pick<IUserForm, 'phone'|'email'>
+type TOrderUserData = Pick<IOrderData, 'phone'|'email'>
 ```
+
 ## Архитектура приложения
 
 Проект имеет MVP архитектуру. Код приложения разделен на слои согласно парадигме MVP:
@@ -115,11 +109,11 @@ type TOrderUserInfo = Pick<IUserForm, 'phone'|'email'>
 ### Базовый код
 
 #### Класс Арі
-  Содержит в себе базовую логику отправки запросов. В конструктор передается базовый адрес
-  сервера и опциональный объект с заголовками запросов.
+  Содержит в себе базовую логику отправки запросов. В конструктор передается базовый адрес сервера и опциональный объект с заголовками запросов.
 - Методы:
   - `get` выполняет GET запрос на переданный в параметрах ендпоинт и возвращает промис с объектом, которым ответил сервер
   - `post` - принимает объект с данными, которые будут переданы в JSON в теле запроса, и отправляет эти данные на ендпоинт переданный как параметр при вызове метода. По умолчанию выполняется POST запрос, но метод запроса может быть переопределен заданием третьего параметра при вызове.
+  - `handleResponse` - oбрабатывает ответ, возвращает JSON, либо выбрасывает ошибку.
 
 #### Класс EventEmitter
 
@@ -133,9 +127,47 @@ type TOrderUserInfo = Pick<IUserForm, 'phone'|'email'>
 - `offAll` - cбросить все обработчики
 - `trigger` - cделать коллбек триггер, генерирующий событие при вызове
 
+#### Класс Component
+
+Базовый класс, предоставляющий общие методы для управления DOM-элементами и отрисовки интерфейса. Используется как родительский класс для всех визуальных компонентов (карточки товаров, формы, модальные окна и т.д.). Конструктор принимает HTML-контейнер. Класс создаёт экземпляр компонента на основе переданного HTML-контейнера.
+
+constructor(protected readonly container: HTMLElement)
+
+##### Методы
+ - `toggleClass`(element: HTMLElement, className: string, force?: boolean) - Переключатель классов. Добавляет или удаляет CSS-класс у элемента.
+
+ - `protected setText`(element: HTMLElement, value: unknown) - Установить текстовое содержимое элемента.
+
+ - `setDisabled` (element: HTMLElement, state: boolean) - сменить статус блокировки. Включает или отключает элемент (например, кнопку).
+
+ - `protected setHidden`(element: HTMLElement) - скрывает элемент
+
+ - `protected setVisible`(element: HTMLElement) - отображает элемент
+
+ - `protected setImage`(element: HTMLImageElement, src: string, alt?: string) - устанавливает изображение с алтернативным текстом
+
+ - `render`(data?: Partial<T>): HTMLElement - Обновляет свойства экземпляра данными и возвращает корневой DOM-элемент компонента.
+Используется для отрисовки компонента в интерфейсе.
+
+#### Класс LarekAPI
+Cпециализированный API-класс для проекта web-larek. Он расширяет класс api для работы с сервером, добавляя методы для получения списка товаров, получения отдельного товара и отправки заказа. Также он автоматически дополняет пути к изображениям с помощью CDN-адреса.\
+\
+Поля класса 
+`readonly cdn: string` - путь для загрузки изображений\
+\
+Конструктор - `constructor(cdn: string, baseUrl: string, options?: RequestInit)`\
+Конструктов принимает cdn для загрузки изображений, основной адрес сервера и дополнительные настройки запроса(например, заголовки).\
+\
+Методы
+getProductList: Promise<IProductItem[]> - метод для получения и обработки списка товаров
+
+getProduct: Promise<IProductItem> - метод для получения и обработки данных одного товара
+
+orderProduct: Promise<IOrderResult> - принимает объект с данными заказа и отправляет заказ на сервер.
+
 ### Слой данных
 #### Класс ProductsListData
-Класс отвечает за предаставление списка товаров на главной странице и реализует интерфейс IProductList.\ ProductsListData возвращает список товаров или однин выбранный товар.\
+Класс отвечает за предаставление списка товаров  и реализует интерфейс IProductList.\ ProductsListData возвращает список товаров или однин выбранный товар.\
 interface IProductList {
   total: number,
   items: IProductItem[],

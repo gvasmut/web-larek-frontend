@@ -2,7 +2,7 @@ import { LarekAPI } from './components/base/LarekAPI';
 import { EventEmitter } from './components/base/events';
 import { BasketData } from './components/model/BasketData';
 import { OrderData } from './components/model/OrderData';
-import { ProductListData } from './components/model/ProductList';
+import { ProductListData } from './components/model/ProductListData';
 import { Basket } from './components/view/Basket';
 import {
 	OrderContactForm,
@@ -51,10 +51,7 @@ const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events);
 
 //Модели данных
 const basket = new Basket(cloneTemplate(basketTemplate), events);
-const productCard = new ProductItemModal(
-	cloneTemplate(productTemplateModal),
-	events
-);
+
 const orderData = new OrderData(events);
 
 // Переиспользуемые части интерфейса
@@ -103,6 +100,7 @@ events.on('initialData:loaded', () => {
 // Отображаем модалку с выбранным продуктом и делаем проверку есть ли товар в корзине
 events.on('product:select', (data: { productId: string }) => {
 	const product = productData.getProduct(data.productId);
+	const productCard = new ProductItemModal(cloneTemplate(productTemplateModal), events);
 	if (product) {
 		const inBasket = basketData.checkIdInBasket(product.id);
 		if (inBasket) {
@@ -132,28 +130,25 @@ events.on('product:buy', (data: { productId: string }) => {
 	modal.close();
 });
 
-events.on('product:clean', () => {
-	PageData.counter = basketData.items.length;
-});
-
+// Открываем модалку с корзиной и продуктами в ней 
 events.on('basket:open', () => {
 	const content = basketData.items.map((product) => {
+		const productInBasket = new ProductInBasket(cloneTemplate(productInBasketTemplate), events);
 		return productInBasket.render(product);
 	});
-	modal.render({
-		content: basket.render({
-			products: content,
-			total: basketData.totalprice,
-			isEmpty: basketData.totalprice === 0,
-		}),
-	});
+
+	modal.render({ content: basket.render({
+		products: content,
+		total: basketData.totalprice,
+		isEmpty: basketData.totalprice === 0,
+	}) })
 	basket.index = content;
 });
 
+// Удаляем товари из корзины и обновляем корзину, обновляем счетчик товаров на главной странице 
 events.on('product:delete', (data: { productId: string }) => {
 	basketData.deleteProduct(data.productId);
 	PageData.counter = basketData.items.length;
-	console.log(basketData.items);
 	const content = basketData.items.map((product) => {
 		return productInBasket.render(product);
 	});
@@ -164,11 +159,7 @@ events.on('product:delete', (data: { productId: string }) => {
 	});
 });
 
-events.on('basket:updated', (data: { basketProducts: [] }) => {
-	if (basketData.items.some((item) => item.price === null)) {
-	}
-});
-
+// Открываем форму заказа с адресом и способом оплаты
 events.on('order:open', () => {
 	modal.render({
 		content: orderDeliveryForm.render({
@@ -180,6 +171,7 @@ events.on('order:open', () => {
 	});
 });
 
+// Отслеживаем изменение полей формы заказа с адресом и способом оплаты
 events.on(
 	/^order\..*:change/,
 	(data: { field: keyof TOrderDeliveryData; value: string }) => {
@@ -187,6 +179,7 @@ events.on(
 	}
 );
 
+//Отслеживаем изменение и формирукм поля с ошибками формы заказа с адресом и способом оплаты, проверяем есть ли ошибки
 events.on(
 	'form:deliveryErrors:change',
 	(errors: Partial<TOrderDeliveryData>) => {
@@ -195,10 +188,10 @@ events.on(
 		orderDeliveryForm.errors = Object.values({ payment, address })
 			.filter((i) => !!i)
 			.join('; ');
-		// console.log('Delivery form errors:', errors);
 	}
 );
 
+//Отслеживаем изменение и формирукм поля с ошибками формы заказа с адресом и способом оплаты, проверяем есть ли ошибки
 events.on('order:submit', () => {
 	if (orderData.validateDeliveryOrderData()) {
 		modal.render({
@@ -212,6 +205,7 @@ events.on('order:submit', () => {
 	}
 });
 
+// Отслеживаем изменение полей формы заказа с телефоном и почтой
 events.on(
 	/^contacts\..*:change/,
 	(data: { field: keyof TOrderUserData; value: string }) => {
@@ -219,6 +213,7 @@ events.on(
 	}
 );
 
+//Отслеживаем изменение и формирукм поля с ошибками формы заказа с телефоном и почтой, проверяем есть ли ошибки
 events.on('form:contactErrors:change', (errors: Partial<TOrderUserData>) => {
 	const { phone, email } = errors;
 	orderContactForm.valid = !phone && !email;
@@ -235,6 +230,7 @@ events.on('contacts:submit', () => {
 		return;
 	}
 	const pricedItems = basketData.items.filter((p) => p.price !== null);
+
 	api
 		.orderProduct({
 			...orderData.userData,
@@ -252,4 +248,9 @@ events.on('contacts:submit', () => {
 		.catch((err) => {
 			console.error(err);
 		});
+});
+
+//Обнуляем счетчик товаров на главной странице
+events.on('product:clean', () => {
+	PageData.counter = basketData.items.length;
 });
