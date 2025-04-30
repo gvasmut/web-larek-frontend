@@ -19,7 +19,6 @@ export interface IOrderData {
 export interface IProductList {
   total?:number,
   items: IProductItem[],
-  preview?: string|null;
   getProduct(id: string): IProductItem;
 }
 
@@ -28,16 +27,16 @@ export interface IBasket {
   totalprice: number,
   addProduct(product:IProductItem):void;
   deleteProduct(productId: string): void;
-  // cleanBasket():void;
+  cleanBasket():void;
 }
 
-export type TProductInfo = Pick<IProductItem, 'image'| 'title'| 'category'|'price'| 'description'>
-export type TOrderData = Pick<IOrderData, 'payment'|'address'>
+
+export type TOrderDeliveryData = Pick<IOrderData, 'payment'|'address'>
 export type TOrderUserData = Pick<IOrderData, 'phone'|'email'>
 
 
 export interface IUserData {
-	userData: TOrderData & TOrderUserData;
+	userData: TOrderDeliveryData & TOrderUserData;
 }
 
 
@@ -46,13 +45,4 @@ export interface IOrderResult {
   total:number;
 }
 
-export type FormErrors = Partial<Record<keyof (TOrderData & TOrderUserData), string>>
-
-export interface IContactsData {
-	contactsPhone: string;
-	contactsEmail: string;
-	contactsIsValid: boolean;
-}
-
-// export type FormDeliveryErrors = Partial<Record<keyof IOrderData, string>>;
-// export type FormContactErrors = Partial<Record<keyof TOrderUserData, string>>;
+export type FormErrors = Partial<Record<keyof (TOrderDeliveryData & TOrderUserData), string>>

@@ -1,13 +1,13 @@
 import {
 	FormErrors,
 	IUserData,
-	TOrderData,
+	TOrderDeliveryData,
 	TOrderUserData,
 } from '../../types';
 import { IEvents } from '../base/events';
 
 export class OrderData implements IUserData {
-	protected _userData: TOrderData & TOrderUserData;
+	protected _userData: TOrderDeliveryData & TOrderUserData;
 	protected events: IEvents;
 	formErrors: FormErrors = {};
 
@@ -25,12 +25,9 @@ export class OrderData implements IUserData {
     return this._userData
   }
 
-	setDeliveryOrderField(field: keyof TOrderData, value: string) {
+	setDeliveryOrderField(field: keyof TOrderDeliveryData, value: string) {
 		this._userData[field] = value;
-    // this.validateDeliveryOrderData()
-		if (this.validateDeliveryOrderData()) {
-      return
-		}
+		this.validateDeliveryOrderData();
 	}
 
 
@@ -42,7 +39,6 @@ export class OrderData implements IUserData {
 		if (!this._userData.address) {
 			errors.address = 'Необходимо указать адрес';
 		}
-    console.log(errors);
 		this.formErrors = errors;
 		this.events.emit('form:deliveryErrors:change', this.formErrors);
 		return Object.keys(errors).length === 0;
@@ -63,10 +59,20 @@ export class OrderData implements IUserData {
 
   setContactOrderField(field: keyof TOrderUserData, value: string) {
 		this._userData[field] = value;
+		this.validateContactOrderData();
    
-		if (this.validateContactOrderData()) {
-      return
-		}
+	}
+
+	reset() {
+		this._userData = {
+			address: '',
+			payment: '',
+			email: '',
+			phone: '',
+		};
+		this.formErrors = {};
+		this.events.emit('form:deliveryErrors:change', {});
+		this.events.emit('form:contactErrors:change', {});
 	}
 
 }

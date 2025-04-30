@@ -3,9 +3,8 @@ import { IEvents } from '../base/events';
 
 export class ProductListData implements IProductList {
 	protected _products: IProductItem[];
-	protected _preview: string | null;
 	protected events: IEvents;
-  productData: { items: { id: string; description: string; image: string; title: string; category: string; price: number; }[]; };
+  // productData: { items: { id: string; description: string; image: string; title: string; category: string; price: number; }[]; };
 
 	constructor(events: IEvents) {
 		this.events = events;

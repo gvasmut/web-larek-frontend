@@ -35,6 +35,7 @@ export class Basket extends Component<IBasketView> {
 
 		this.products = [];
 	}
+	
 	set products(products: HTMLElement[]) {
 		if (products.length) {
 			this._productList.replaceChildren(...products);
@@ -47,22 +48,20 @@ export class Basket extends Component<IBasketView> {
 		}
 	}
 
-  set total(total: number) {
-    this.setText(this._total, `${total} синапсов`);
-  }
+	set total(total: number) {
+		this.setText(this._total, `${total} синапсов`);
+	}
 
-  set index(products: HTMLElement[]) {
+	set index(products: HTMLElement[]) {
 		if (products) {
 			for (let i = 0; i < products.length; i++) {
 				const index = products[i].querySelector('.basket__item-index');
 				index.textContent = `${i + 1}`;
 			}
 		}
-  }
+	}
 
-  set isEmpty (value: boolean){
-    this.setDisabled(this._button, value);
-  }
-
+	set isEmpty(value: boolean) {
+		this.setDisabled(this._button, value);
+	}
 }
-

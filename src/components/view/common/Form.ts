@@ -51,6 +51,5 @@ export class Form<T> extends Component<IFormState> {
       Object.assign(this, inputs);
       this.setDisabled(this._submit, !valid);
       return this.container;
-
   }
 }

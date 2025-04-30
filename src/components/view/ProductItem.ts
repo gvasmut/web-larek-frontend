@@ -1,4 +1,5 @@
 import { IProductItem } from "../../types";
+import { CategoryClassMap } from "../../utils/constants";
 import { cloneTemplate } from "../../utils/utils";
 import { Component } from "../base/Component";
 import { IEvents } from "../base/events";
@@ -12,7 +13,6 @@ protected productCategory: HTMLElement;
 constructor(protected container: HTMLTemplateElement, events: IEvents){
   super(container,events)
   this.events = events;
-  // this.container = cloneTemplate(container);
 
 
   this.productImage = this.container.querySelector('.card__image');
@@ -31,6 +31,8 @@ set image(value:string){
 
 set category (value:string){
   this.setText(this.productCategory, value)
+  const className = CategoryClassMap[value] || 'card__category_other';
+	this.productCategory.className = `card__category ${className}`;
 }
 
 }
