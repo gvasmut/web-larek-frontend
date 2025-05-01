@@ -8,23 +8,22 @@ import {
 	OrderContactForm,
 	OrderDeliveryForm,
 } from './components/view/OrderForm';
-import { Page } from './components/view/Page';
+import { Page } from './components/view/common/Page';
 import { ProductInBasket } from './components/view/ProductInBasket';
 import { ProductItem } from './components/view/ProductItem';
 import { ProductItemModal } from './components/view/ProductItemModal';
 import { Success } from './components/view/Success';
 import { Modal } from './components/view/common/Modal';
 import './scss/styles.scss';
-import {
-	TOrderDeliveryData,
-	TOrderUserData,
-} from './types';
+import { TOrderDeliveryData, TOrderUserData } from './types';
 import { API_URL, CDN_URL } from './utils/constants';
 import { cloneTemplate, ensureElement } from './utils/utils';
 
 const events = new EventEmitter();
 const api = new LarekAPI(CDN_URL, API_URL);
 
+//Модели данных
+const orderData = new OrderData(events);
 const productData = new ProductListData(events);
 const basketData = new BasketData(events);
 
@@ -49,12 +48,8 @@ const successTemplate = ensureElement<HTMLTemplateElement>('#success');
 const PageData = new Page(document.body, events);
 const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events);
 
-//Модели данных
-const basket = new Basket(cloneTemplate(basketTemplate), events);
-
-const orderData = new OrderData(events);
-
 // Переиспользуемые части интерфейса
+const basket = new Basket(cloneTemplate(basketTemplate), events);
 const productInBasket = new ProductInBasket(
 	cloneTemplate(productInBasketTemplate),
 	events
@@ -73,7 +68,7 @@ const success = new Success(cloneTemplate(successTemplate), {
 	},
 });
 
-// Получаем продукты с сервера и инициализируем событие по загрузке 
+// Получаем продукты с сервера и инициализируем событие по загрузке
 api
 	.getProductList()
 	.then((products) => {
@@ -88,7 +83,7 @@ api
 		console.error('Ошибка загрузке продуктов с сервера:', error);
 	});
 
-// Отображаем полученные продукты с сервера на главной странице 
+// Отображаем полученные продукты с сервера на главной странице
 events.on('initialData:loaded', () => {
 	const productArray = productData.items.map((product) => {
 		const card = new ProductItem(cloneTemplate(productTemplate), events);
@@ -100,7 +95,10 @@ events.on('initialData:loaded', () => {
 // Отображаем модалку с выбранным продуктом и делаем проверку есть ли товар в корзине
 events.on('product:select', (data: { productId: string }) => {
 	const product = productData.getProduct(data.productId);
-	const productCard = new ProductItemModal(cloneTemplate(productTemplateModal), events);
+	const productCard = new ProductItemModal(
+		cloneTemplate(productTemplateModal),
+		events
+	);
 	if (product) {
 		const inBasket = basketData.checkIdInBasket(product.id);
 		if (inBasket) {
@@ -130,22 +128,27 @@ events.on('product:buy', (data: { productId: string }) => {
 	modal.close();
 });
 
-// Открываем модалку с корзиной и продуктами в ней 
+// Открываем модалку с корзиной и продуктами в ней
 events.on('basket:open', () => {
 	const content = basketData.items.map((product) => {
-		const productInBasket = new ProductInBasket(cloneTemplate(productInBasketTemplate), events);
+		const productInBasket = new ProductInBasket(
+			cloneTemplate(productInBasketTemplate),
+			events
+		);
 		return productInBasket.render(product);
 	});
 
-	modal.render({ content: basket.render({
-		products: content,
-		total: basketData.totalprice,
-		isEmpty: basketData.totalprice === 0,
-	}) })
+	modal.render({
+		content: basket.render({
+			products: content,
+			total: basketData.totalPrice,
+			isEmpty: basketData.totalPrice === 0,
+		}),
+	});
 	basket.index = content;
 });
 
-// Удаляем товари из корзины и обновляем корзину, обновляем счетчик товаров на главной странице 
+// Удаляем товари из корзины и обновляем корзину, обновляем счетчик товаров на главной странице
 events.on('product:delete', (data: { productId: string }) => {
 	basketData.deleteProduct(data.productId);
 	PageData.counter = basketData.items.length;
@@ -154,8 +157,8 @@ events.on('product:delete', (data: { productId: string }) => {
 	});
 	basket.render({
 		products: content,
-		total: basketData.totalprice,
-		isEmpty: basketData.totalprice === 0,
+		total: basketData.totalPrice,
+		isEmpty: basketData.totalPrice === 0,
 	});
 });
 
@@ -220,13 +223,11 @@ events.on('form:contactErrors:change', (errors: Partial<TOrderUserData>) => {
 	orderContactForm.errors = Object.values({ phone, email })
 		.filter((i) => !!i)
 		.join('; ');
-	console.log('contact form errors:', errors);
 });
 
 // Отправлена форма заказа
 events.on('contacts:submit', () => {
 	if (!orderData.validateContactOrderData()) {
-		console.log('Форма заказа валидна, отправляем заказ...');
 		return;
 	}
 	const pricedItems = basketData.items.filter((p) => p.price !== null);
@@ -235,7 +236,7 @@ events.on('contacts:submit', () => {
 		.orderProduct({
 			...orderData.userData,
 			items: pricedItems.map((p) => p.id),
-			total: basketData.totalprice,
+			total: basketData.totalPrice,
 		})
 		.then((result) => {
 			success.total = result.total;

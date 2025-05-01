@@ -18,7 +18,7 @@ export class BasketData implements IBasket {
 		this.events.emit('basket:updated', this.basketProducts);
 	}
 
-	get totalprice() {
+	get totalPrice() {
 		return this.basketProducts.reduce((sum, product) => {
 			if (product.price === null) {
 				return sum;

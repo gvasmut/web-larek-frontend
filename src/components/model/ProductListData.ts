@@ -4,7 +4,7 @@ import { IEvents } from '../base/events';
 export class ProductListData implements IProductList {
 	protected _products: IProductItem[];
 	protected events: IEvents;
-  
+
 	constructor(events: IEvents) {
 		this.events = events;
 	}
@@ -21,4 +21,3 @@ export class ProductListData implements IProductList {
 		return this._products;
 	}
 }
-

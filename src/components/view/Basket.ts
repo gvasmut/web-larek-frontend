@@ -35,7 +35,7 @@ export class Basket extends Component<IBasketView> {
 
 		this.products = [];
 	}
-	
+
 	set products(products: HTMLElement[]) {
 		if (products.length) {
 			this._productList.replaceChildren(...products);

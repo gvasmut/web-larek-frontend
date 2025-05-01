@@ -15,7 +15,6 @@ export class OrderDeliveryForm extends Form<TOrderDeliveryData> {
 				this.onInputChange('payment', button.name);
 			});
 		});
-    
 	}
 
 	set payment(value: string) {
@@ -28,7 +27,6 @@ export class OrderDeliveryForm extends Form<TOrderDeliveryData> {
 		(this.container.elements.namedItem('address') as HTMLInputElement).value =
 			value;
 	}
-
 }
 
 export class OrderContactForm extends Form<TOrderUserData> {
@@ -45,5 +43,4 @@ export class OrderContactForm extends Form<TOrderUserData> {
 		(this.container.elements.namedItem('email') as HTMLInputElement).value =
 			value;
 	}
-
 }

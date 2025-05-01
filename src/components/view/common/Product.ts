@@ -39,5 +39,4 @@ export class Product extends Component<IProductItem> {
 			this.setText(this.productPrice, `${value} синапсов`);
 		}
 	}
-
 }

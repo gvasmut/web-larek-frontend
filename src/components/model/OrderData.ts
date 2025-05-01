@@ -21,15 +21,14 @@ export class OrderData implements IUserData {
 		};
 	}
 
-  get userData(){
-    return this._userData
-  }
+	get userData() {
+		return this._userData;
+	}
 
 	setDeliveryOrderField(field: keyof TOrderDeliveryData, value: string) {
 		this._userData[field] = value;
 		this.validateDeliveryOrderData();
 	}
-
 
 	validateDeliveryOrderData() {
 		const errors: typeof this.formErrors = {};
@@ -44,7 +43,7 @@ export class OrderData implements IUserData {
 		return Object.keys(errors).length === 0;
 	}
 
-  validateContactOrderData() {
+	validateContactOrderData() {
 		const errors: typeof this.formErrors = {};
 		if (!this._userData.email) {
 			errors.email = 'Необходимо указать email';
@@ -57,10 +56,9 @@ export class OrderData implements IUserData {
 		return Object.keys(errors).length === 0;
 	}
 
-  setContactOrderField(field: keyof TOrderUserData, value: string) {
+	setContactOrderField(field: keyof TOrderUserData, value: string) {
 		this._userData[field] = value;
 		this.validateContactOrderData();
-   
 	}
 
 	reset() {
@@ -74,5 +72,4 @@ export class OrderData implements IUserData {
 		this.events.emit('form:deliveryErrors:change', {});
 		this.events.emit('form:contactErrors:change', {});
 	}
-
 }

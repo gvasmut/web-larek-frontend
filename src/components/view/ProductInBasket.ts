@@ -7,7 +7,6 @@ export class ProductInBasket extends Product {
 
 	constructor(protected container: HTMLTemplateElement, events: IEvents) {
 		super(container, events);
-		this.events = events;
 
 		this.basketButton = ensureElement<HTMLButtonElement>(
 			'.basket__item-delete',
