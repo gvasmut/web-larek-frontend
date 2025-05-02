@@ -50,10 +50,6 @@ const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events);
 
 // Переиспользуемые части интерфейса
 const basket = new Basket(cloneTemplate(basketTemplate), events);
-const productInBasket = new ProductInBasket(
-	cloneTemplate(productInBasketTemplate),
-	events
-);
 const orderDeliveryForm = new OrderDeliveryForm(
 	cloneTemplate(orderDeliveryFormTemplate),
 	events
@@ -130,11 +126,12 @@ events.on('product:buy', (data: { productId: string }) => {
 
 // Открываем модалку с корзиной и продуктами в ней
 events.on('basket:open', () => {
-	const content = basketData.items.map((product) => {
+	const content = basketData.items.map((product, index) => {
 		const productInBasket = new ProductInBasket(
 			cloneTemplate(productInBasketTemplate),
 			events
 		);
+		productInBasket.index = (index+1);
 		return productInBasket.render(product);
 	});
 
@@ -145,14 +142,19 @@ events.on('basket:open', () => {
 			isEmpty: basketData.totalPrice === 0,
 		}),
 	});
-	basket.index = content;
+	
 });
 
 // Удаляем товари из корзины и обновляем корзину, обновляем счетчик товаров на главной странице
 events.on('product:delete', (data: { productId: string }) => {
 	basketData.deleteProduct(data.productId);
 	PageData.counter = basketData.items.length;
-	const content = basketData.items.map((product) => {
+	const content = basketData.items.map((product, index) => {
+		const productInBasket = new ProductInBasket(
+			cloneTemplate(productInBasketTemplate),
+			events
+		);
+		productInBasket.index = (index+1);
 		return productInBasket.render(product);
 	});
 	basket.render({

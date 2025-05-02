@@ -30,7 +30,7 @@ export class BasketData implements IBasket {
 	addProduct(product: IProductItem): void {
 		const exists = this.basketProducts.some((p) => p.id === product.id);
 		if (!exists) {
-			this.basketProducts = [product, ...this.basketProducts];
+			this.basketProducts = [...this.basketProducts, product];
 			this.events.emit('product:add', { productId: product.id });
 		}
 	}

@@ -52,15 +52,6 @@ export class Basket extends Component<IBasketView> {
 		this.setText(this._total, `${total} синапсов`);
 	}
 
-	set index(products: HTMLElement[]) {
-		if (products) {
-			for (let i = 0; i < products.length; i++) {
-				const index = products[i].querySelector('.basket__item-index');
-				index.textContent = `${i + 1}`;
-			}
-		}
-	}
-
 	set isEmpty(value: boolean) {
 		this.setDisabled(this._button, value);
 	}
